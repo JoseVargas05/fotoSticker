@@ -1,0 +1,55 @@
+name: clima
+description: A new Flutter application.
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+dependency_overrides:
+  image: 2.0.7
+dependencies:
+  image_picker:
+  flutter:
+    sdk: flutter
+  photos_saver: ^0.0.2
+  cupertino_icons: ^0.1.2
+  geolocator: '^5.0.0'
+  google_maps_flutter: ^0.5.19
+  #flutter_twitter_login: ^1.1.0
+  firebase_auth: ^0.14.0+5
+  # flutter_facebook_login: ^1.2.0
+ # flutter_facebook_login:
+   # git:
+    #  url: https://github.com/roughike/flutter_facebook_login
+ #     ref: '79ff08a'
+  http: ^0.12.0+2
+  random_color:
+  social_share_plugin: ^0.2.0
+  flutter_share_me: ^0.6.0
+  esys_flutter_share: ^1.0.2
+  flutter_launcher_icons:
+  cloud_firestore:
+  rflutter_alert: 
+  #url_launcher: 4.1.0
+  matrix_gesture_detector: ^0.1.0
+flutter_icons:
+  image_path: "images/logo.png"
+  android: true
+  ios: true
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+  - images/
+  - stickers/
+  - social_share_logos/
+
+  fonts:
+  - family: Spartan MB
+    fonts:
+    - asset: fonts/SpartanMB-Black.otf
+      weight: 900

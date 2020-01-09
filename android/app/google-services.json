@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "919733780560",
+    "firebase_url": "https://tago-pics.firebaseio.com",
+    "project_id": "tago-pics",
+    "storage_bucket": "tago-pics.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919733780560:android:2752c5eeffe70ab3c8d155",
+        "android_client_info": {
+          "package_name": "co.tago.pics"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919733780560-4lrag40ostoupll5plv3n3l3gmhmc4ut.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDazKxrm72aPDZzLVB9k03b4QNPnoGporI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919733780560-4lrag40ostoupll5plv3n3l3gmhmc4ut.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
