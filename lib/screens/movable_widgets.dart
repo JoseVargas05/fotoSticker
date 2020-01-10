@@ -163,9 +163,9 @@ class _HomeViewState extends State<HomeView> {
         // mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
+            constraints: BoxConstraints(maxWidth: SizeConfig.blockSizeHorizontal * 130, maxHeight: SizeConfig.blockSizeVertical * 75, minWidth: SizeConfig.blockSizeHorizontal * 130, minHeight: SizeConfig.blockSizeVertical * 75),
             //PRUEBA - EN LOS DOS CASOS ES LO MISMO: SE PUEDE DEJAR SOLO SizeConfig.blockSizeHorizontal * 130 , SizeConfig.blockSizeVertical * 75
-            width: wtContainerDrag == 0 ? SizeConfig.blockSizeHorizontal * 130: SizeConfig.blockSizeHorizontal * 130,
-            height: htContainerDrag == 0 ? SizeConfig.blockSizeVertical * 75: SizeConfig.blockSizeVertical * 75,
+            height: htContainerDrag.toDouble() - 80,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(15.0, 50, 15, 50),
               child: Container(

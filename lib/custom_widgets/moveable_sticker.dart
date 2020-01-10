@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matrix_gesture_detector/matrix_gesture_detector.dart';
 import 'package:clima/screens/movable_widgets.dart';
+import 'package:vector_math/vector_math_64.dart' as vector;
 
 class MoveableStackItem extends StatefulWidget {
   String stickerURL;
@@ -10,76 +11,60 @@ class MoveableStackItem extends StatefulWidget {
 }
 
 class _MoveableStackItemState extends State<MoveableStackItem> {
-  double xPosition = 0;
-  double yPosition = 0;
-  Matrix4 matrix = Matrix4.identity();
-  final ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
+
+  Matrix4 matrix;
+  ValueNotifier<Matrix4> notifier;
+  Boxer boxer;
 
   @override
   void initState() {
     super.initState();
+    matrix = Matrix4.identity();
+    notifier = ValueNotifier(matrix);
   }
 
   @override
   Widget build(BuildContext context) {
-    return MatrixGestureDetector(
-      onMatrixUpdate: (Matrix4 m, Matrix4 tm, Matrix4 sm, Matrix4 rm) {
-        /*var wp =  (wtContainerDrag * 95)/720;
-        var wm =  (wtContainerDrag * -58)/720;
-        
-        var hp = (htContainerDrag * 57)/451;
-        var hm = (htContainerDrag * -45)/451;*/
-        //SE ESTABLECE LAS COORDENADAS X,Y , SI DETECTA QUE SALE DEL AREA NO SE MUEVE MAS (HAY QUE HACERLO DINAMICO SEGUN EL TAMAÑO DE LA IMAGEN)
-          double x = 0;
-          double y = 0;
-          //COMPROBACIÓN X+ X-
-          if (m.getTranslation()[0] < 95 && m.getTranslation()[0] > -58) {
-            x = m.getTranslation()[0];
-          } else{
-            if(m.getTranslation()[0] < 0){
-              x = -58;
-            }else{
-              x = 95;
-            }
-          }
-          //COMPROBACIÓN Y+ Y-
-          if (m.getTranslation()[1] < 57 && m.getTranslation()[1] > -45) {
-            y = m.getTranslation()[1];
-          }else{
-            if(m.getTranslation()[1] < 0){
-              y = -45;
-            }else{
-              y = 57;
-            }
-          }
-          //SE AGREGA EL CAMBIO EN X Y - Z SE QUEDA IGUAL
-          m.setTranslationRaw(x, y, m.getTranslation()[2]);
-         if (m.determinant() > 0.99) {
-            notifier.value = m;
-          } else {
-            m.setIdentity();
-            notifier.value.setIdentity();
-          }
-          
-        setState(() {
-          matrix = m;
-        });
+    var size = Image.network(widget.stickerURL).width;
+    return LayoutBuilder(
+      builder: (ctx, constraints) {
+        var width = constraints.biggest.width / 1.5;
+        var height = constraints.biggest.height / 2.0;
+        var dx = (constraints.biggest.width - width) / 2;
+        var dy = (constraints.biggest.height - height) / 2;
+        matrix.leftTranslate(dx, dy);
+        boxer = Boxer(Offset.zero & constraints.biggest,
+            Rect.fromLTWH(0, 0, width, height));
+        return MatrixGestureDetector(
+          onMatrixUpdate: (m, tm, sm, rm) {
+            matrix = MatrixGestureDetector.compose(matrix, tm, sm, rm);
+            boxer.clamp(matrix);
+            notifier.value = matrix;
+          },
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            alignment: Alignment.topLeft,
+            color: Colors.transparent,
+            child: AnimatedBuilder(
+              builder: (ctx, child) {
+                return Transform(
+                  transform: matrix,
+                  child: Container(
+                    color: Colors.red,
+                    width: width,
+                    height: height,
+                    child: Center(
+                      child: Image.network(widget.stickerURL),
+                    ),
+                  ),
+                );
+              },
+              animation: notifier,
+            ),
+          ),
+        );
       },
-      //SE DESACTIVO EL ROTAR Y LA ESCALA PARA HACER PRUEBAS YA QUE ESTAS FALLAN CON EL NUEVO MÉTODO, EL PIVOTE CENTRAL DEL STICKER SE MUEVE
-      shouldRotate: false,
-      shouldScale: false,
-      child: Transform(
-        transform: matrix,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          child: Image.network(widget.stickerURL),
-        // child: Container(
-        //   width: 300,
-        //   height: 150,
-        //   child: Image.network(widget.stickerURL),
-        ),
-      ),
     );
     // return Positioned(
     //   top: yPosition,
@@ -98,5 +83,53 @@ class _MoveableStackItemState extends State<MoveableStackItem> {
     //     ),
     //   ),
     // );
+  }
+}
+class Boxer {
+  final Rect bounds;
+  final Rect src;
+  Rect dst;
+
+  Boxer(this.bounds, this.src);
+
+  void clamp(Matrix4 m) {
+    dst = MatrixUtils.transformRect(m, src);
+    if (bounds.left <= dst.left &&
+        bounds.top <= dst.top &&
+        bounds.right >= dst.right &&
+        bounds.bottom >= dst.bottom) {
+      // bounds contains dst
+      return;
+    }
+
+    if (dst.width > bounds.width || dst.height > bounds.height) {
+      Rect intersected = dst.intersect(bounds);
+      FittedSizes fs = applyBoxFit(BoxFit.contain, dst.size, intersected.size);
+
+      vector.Vector3 t = vector.Vector3.zero();
+      intersected = Alignment.center.inscribe(fs.destination, intersected);
+      if (dst.width > bounds.width)
+        t.y = intersected.top;
+      else
+        t.x = intersected.left;
+
+      var scale = fs.destination.width / src.width;
+      vector.Vector3 s = vector.Vector3(scale, scale, 0);
+      m.setFromTranslationRotationScale(t, vector.Quaternion.identity(), s);
+      return;
+    }
+
+    if (dst.left < bounds.left) {
+      m.leftTranslate(bounds.left - dst.left, 0.0);
+    }
+    if (dst.top < bounds.top) {
+      m.leftTranslate(0.0, bounds.top - dst.top);
+    }
+    if (dst.right > bounds.right) {
+      m.leftTranslate(bounds.right - dst.right, 0.0);
+    }
+    if (dst.bottom > bounds.bottom) {
+      m.leftTranslate(0.0, bounds.bottom - dst.bottom);
+    }
   }
 }
